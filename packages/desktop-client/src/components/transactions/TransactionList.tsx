@@ -1,8 +1,13 @@
 // @ts-strict-ignore
 // TODO: remove strict
+import { View } from '@actual-app/components/view';
+import { MockCategorySuggestions } from './MockCategorySuggestions';
+
+
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
+
 
 import { theme } from '@actual-app/components/theme';
 import { send } from '@actual-app/core/platform/client/connection';
@@ -478,6 +483,49 @@ export function TransactionList({
     [isLearnCategoriesEnabled, onChange, onRefetch, promptToConvertToSchedule],
   );
 
+    const smartCatTarget = allTransactions.find(
+    tx => !tx.category && !tx.is_child && !isPreviewId(tx.id),
+  );
+
+  const onApplyMockCategory = useCallback(
+    async (transaction: TransactionEntity, categoryId: string) => {
+      await onSave({
+        ...transaction,
+        category: categoryId,
+      });
+    },
+    [onSave],
+  );
+
+  const notifyMockInfo = useCallback(
+    (message: string) => {
+      dispatch(
+        addNotification({
+          notification: {
+            type: 'message',
+            message,
+          },
+        }),
+      );
+    },
+    [dispatch],
+  );
+
+  const notifyMockError = useCallback(
+    (message: string) => {
+      dispatch(
+        addNotification({
+          notification: {
+            type: 'error',
+            message,
+          },
+        }),
+      );
+    },
+    [dispatch],
+  );
+
+
   const onAddSplit = useCallback(
     (id: TransactionEntity['id']) => {
       const changes = addSplitTransaction(transactionsLatest.current, id);
@@ -721,54 +769,131 @@ export function TransactionList({
     [sortField, ascDesc, isFiltered, allTransactions, onRefetch],
   );
 
-  return (
-    <TransactionTable
-      ref={tableRef}
-      transactions={allTransactions}
-      loadMoreTransactions={loadMoreTransactions}
-      accounts={accounts}
-      categoryGroups={categoryGroups}
-      payees={payees}
-      balances={balances}
-      showBalances={showBalances}
-      showReconciled={showReconciled}
-      showCleared={showCleared}
-      showAccount={showAccount}
-      showCategory
-      currentAccountId={account && account.id}
-      currentCategoryId={category && category.id}
-      isAdding={isAdding}
-      isNew={isNew}
-      isMatched={isMatched}
-      dateFormat={dateFormat}
-      hideFraction={hideFraction}
-      renderEmpty={renderEmpty}
-      onSave={onSave}
-      onApplyRules={onApplyRules}
-      onSplit={onSplit}
-      onCloseAddTransaction={onCloseAddTransaction}
-      onAdd={onAdd}
-      onAddSplit={onAddSplit}
-      onManagePayees={onManagePayees}
-      onCreatePayee={onCreatePayee}
-      style={{ backgroundColor: theme.tableBackground }}
-      onNavigateToTransferAccount={onNavigateToTransferAccount}
-      onNavigateToSchedule={onNavigateToSchedule}
-      onNotesTagClick={onNotesTagClick}
-      onSort={onSort}
-      sortField={sortField}
-      ascDesc={ascDesc}
-      isFiltered={isFiltered}
-      onReorder={allowReorder ? onReorder : undefined}
-      onBatchDelete={onBatchDelete}
-      onBatchDuplicate={onBatchDuplicate}
-      onBatchLinkSchedule={onBatchLinkSchedule}
-      onBatchUnlinkSchedule={onBatchUnlinkSchedule}
-      onCreateRule={onCreateRule}
-      onScheduleAction={onScheduleAction}
-      onMakeAsNonSplitTransactions={onMakeAsNonSplitTransactions}
-      showSelection={showSelection}
-      allowSplitTransaction={allowSplitTransaction}
-    />
+const demoTransaction = transactions.find(
+  tx => !tx.category && !tx.is_child && !isPreviewId(tx.id),
+);
+
+const demoTitle = demoTransaction
+  ? demoTransaction.notes?.trim() ||
+    `Uncategorized transaction ${demoTransaction.id}`
+  : null;
+
+const onPickMockSuggestion = useCallback(
+  (label: string) => {
+    dispatch(
+      addNotification({
+        notification: {
+          type: 'message',
+          message: `SmartCat demo: picked "${label}"`,
+        },
+      }),
+    );
+  },
+  [dispatch],
+  );
+
+  const smartCatTarget = allTransactions.find(
+    tx => !tx.category && !tx.is_child && !isPreviewId(tx.id),
+  );
+
+  const onApplySmartCatCategory = useCallback(
+    async (transaction: TransactionEntity, categoryId: string) => {
+      await onSave({
+        ...transaction,
+        category: categoryId,
+      });
+    },
+    [onSave],
+  );
+
+  const notifySmartCatInfo = useCallback(
+    (message: string) => {
+      dispatch(
+        addNotification({
+          notification: {
+            type: 'message',
+            message,
+          },
+        }),
+      );
+    },
+    [dispatch],
+  );
+
+  const notifySmartCatError = useCallback(
+    (message: string) => {
+      dispatch(
+        addNotification({
+          notification: {
+            type: 'error',
+            message,
+          },
+        }),
+      );
+    },
+    [dispatch],
+  );
+
+    return (
+    <View style={{ flex: 1 }}>
+      {smartCatTarget ? (
+        <MockCategorySuggestions
+          transaction={smartCatTarget}
+          categoryGroups={categoryGroups}
+          onApplyCategory={onApplyMockCategory}
+          onInfo={notifyMockInfo}
+          onError={notifyMockError}
+        />
+      ) : null}
+
+      <TransactionTable
+        ref={tableRef}
+        transactions={allTransactions}
+        loadMoreTransactions={loadMoreTransactions}
+        accounts={accounts}
+        categoryGroups={categoryGroups}
+        payees={payees}
+        balances={balances}
+        showBalances={showBalances}
+        showReconciled={showReconciled}
+        showCleared={showCleared}
+        showAccount={showAccount}
+        showCategory
+        currentAccountId={account && account.id}
+        currentCategoryId={category && category.id}
+        isAdding={isAdding}
+        isNew={isNew}
+        isMatched={isMatched}
+        dateFormat={dateFormat}
+        hideFraction={hideFraction}
+        renderEmpty={renderEmpty}
+        onSave={onSave}
+        onApplyRules={onApplyRules}
+        onSplit={onSplit}
+        onCloseAddTransaction={onCloseAddTransaction}
+        onAdd={onAdd}
+        onAddSplit={onAddSplit}
+        onManagePayees={onManagePayees}
+        onCreatePayee={onCreatePayee}
+        style={{ backgroundColor: theme.tableBackground }}
+        onNavigateToTransferAccount={onNavigateToTransferAccount}
+        onNavigateToSchedule={onNavigateToSchedule}
+        onNotesTagClick={onNotesTagClick}
+        onSort={onSort}
+        sortField={sortField}
+        ascDesc={ascDesc}
+        isFiltered={isFiltered}
+        onReorder={allowReorder ? onReorder : undefined}
+        onBatchDelete={onBatchDelete}
+        onBatchDuplicate={onBatchDuplicate}
+        onBatchLinkSchedule={onBatchLinkSchedule}
+        onBatchUnlinkSchedule={onBatchUnlinkSchedule}
+        onCreateRule={onCreateRule}
+        onScheduleAction={onScheduleAction}
+        onMakeAsNonSplitTransactions={onMakeAsNonSplitTransactions}
+        showSelection={showSelection}
+        allowSplitTransaction={allowSplitTransaction}
+      />
+    </View>
   );
 }
