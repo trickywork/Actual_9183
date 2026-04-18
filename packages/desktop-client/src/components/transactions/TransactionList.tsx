@@ -483,49 +483,6 @@ export function TransactionList({
     [isLearnCategoriesEnabled, onChange, onRefetch, promptToConvertToSchedule],
   );
 
-    const smartCatTarget = allTransactions.find(
-    tx => !tx.category && !tx.is_child && !isPreviewId(tx.id),
-  );
-
-  const onApplyMockCategory = useCallback(
-    async (transaction: TransactionEntity, categoryId: string) => {
-      await onSave({
-        ...transaction,
-        category: categoryId,
-      });
-    },
-    [onSave],
-  );
-
-  const notifyMockInfo = useCallback(
-    (message: string) => {
-      dispatch(
-        addNotification({
-          notification: {
-            type: 'message',
-            message,
-          },
-        }),
-      );
-    },
-    [dispatch],
-  );
-
-  const notifyMockError = useCallback(
-    (message: string) => {
-      dispatch(
-        addNotification({
-          notification: {
-            type: 'error',
-            message,
-          },
-        }),
-      );
-    },
-    [dispatch],
-  );
-
-
   const onAddSplit = useCallback(
     (id: TransactionEntity['id']) => {
       const changes = addSplitTransaction(transactionsLatest.current, id);
@@ -769,34 +726,15 @@ export function TransactionList({
     [sortField, ascDesc, isFiltered, allTransactions, onRefetch],
   );
 
-const demoTransaction = transactions.find(
-  tx => !tx.category && !tx.is_child && !isPreviewId(tx.id),
-);
-
-const demoTitle = demoTransaction
-  ? demoTransaction.notes?.trim() ||
-    `Uncategorized transaction ${demoTransaction.id}`
-  : null;
-
-const onPickMockSuggestion = useCallback(
-  (label: string) => {
-    dispatch(
-      addNotification({
-        notification: {
-          type: 'message',
-          message: `SmartCat demo: picked "${label}"`,
-        },
-      }),
-    );
-  },
-  [dispatch],
-  );
-
   const smartCatTarget = allTransactions.find(
-    tx => !tx.category && !tx.is_child && !isPreviewId(tx.id),
+    tx =>
+      !tx.category &&
+      !tx.is_child &&
+      !tx.is_parent &&
+      !isPreviewId(tx.id), 
   );
 
-  const onApplySmartCatCategory = useCallback(
+  const onApplyMockCategory = useCallback(
     async (transaction: TransactionEntity, categoryId: string) => {
       await onSave({
         ...transaction,
@@ -806,7 +744,7 @@ const onPickMockSuggestion = useCallback(
     [onSave],
   );
 
-  const notifySmartCatInfo = useCallback(
+  const notifyMockInfo = useCallback(
     (message: string) => {
       dispatch(
         addNotification({
@@ -820,7 +758,7 @@ const onPickMockSuggestion = useCallback(
     [dispatch],
   );
 
-  const notifySmartCatError = useCallback(
+  const notifyMockError = useCallback(
     (message: string) => {
       dispatch(
         addNotification({
@@ -834,7 +772,7 @@ const onPickMockSuggestion = useCallback(
     [dispatch],
   );
 
-    return (
+  return (
     <View style={{ flex: 1 }}>
       {smartCatTarget ? (
         <MockCategorySuggestions
